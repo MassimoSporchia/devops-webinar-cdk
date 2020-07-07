@@ -16,6 +16,8 @@ export class BluegreenStack extends cdk.Stack {
       vpc,
     });
 
+    // I used "fromRepositoryName" to showcase the ability to import previously-created resources, so in this case ECR repository needs to be already created! (
+    // You can also do this in this same template! (see: https://docs.aws.amazon.com/cdk/api/latest/docs/aws-ecr-readme.html )
     const repo = ecr.Repository.fromRepositoryName(
       this,
       "repository",
@@ -52,10 +54,7 @@ export class BluegreenStack extends cdk.Stack {
 
     const blue_listener = lb.addListener("blue-listener", { port: 80 });
 
-    const green_listener = lb.addListener("green-listener", {
-      port: 8001,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-    });
+    const green_listener = lb.addListener("green-listener", { port: 8001, protocol: elbv2.ApplicationProtocol.HTTP});
 
     const blue_targetgroup = blue_listener.addTargets("hello-world-blue", {
       targetGroupName: "hello-world-blue",
@@ -63,22 +62,28 @@ export class BluegreenStack extends cdk.Stack {
       healthCheck: {
         enabled: true,
         path: "/health",
-        port: "80",
+        port: "8080",
       },
       targets: [ecsService],
     });
 
-    const green_targetgroup = green_listener.addTargets("hello-world-green", {
+    green_listener.addAction("default-action",{
+      action: elbv2.ListenerAction.forward([blue_targetgroup]),
+    })
+
+    const green_targetroup = new elbv2.ApplicationTargetGroup(this, "hello-world-green",{
       targetGroupName: "hello-world-green",
-      port: 8001,
-      protocol: elbv2.ApplicationProtocol.HTTP,
       healthCheck: {
         enabled: true,
         path: "/health",
-        port: "8001",
+        port: "8080",
         protocol: elbv2.Protocol.HTTP,
       },
-    });
+      port: 80,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      vpc: vpc
+    })
 
   }
 }
