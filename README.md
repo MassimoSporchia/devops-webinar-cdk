@@ -1,8 +1,6 @@
-# Welcome to your CDK TypeScript project!
+# Introduzione ai servizi DevOps su AWS - CDK
 
-This is a blank project for TypeScript development with CDK.
-
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Template CDK utilizzato durante la demo hands-on nel webinar 
 
 ## Useful commands
 
